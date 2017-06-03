@@ -26,29 +26,45 @@ function Dataset(params){
   this.max = params.max;
   this.min = params.min;
   this.vectors = [];
+  this.centroids = [];
   this.rand = new Random();
 }
 
-Dataset.prototype.generateArbitrary = function(vectorCount) {
-  for(let i = 0; i < vectorCount; i++){
-    let vector = new Vector({
+Dataset.prototype.generateArbitrary = function(count, destination) {
+  for(let i = 0; i < count; i++){
+    let point = new Vector({
       x: this.rand.int(this.min, this.max),
       y: this.rand.int(this.min, this.max),
       color: 'white'
     });
-    this.vectors.push(vector);
+    destination.push(point);
   }
 }
 
 Dataset.prototype.display = function(){
   this.vectors.forEach(function(v){
-    Shape.Circle(v.x,v.y,1).fillColor = `${v.color}`;
-  })
+    Shape.Circle(v.x,v.y,2).fillColor = `${v.color}`;
+  });
+  this.centroids.forEach(function(c){
+    Shape.Rectangle(c.x,c.y,5,5).fillColor = `${c.color}`;
+  });
 }
 
-// Dataset.prototype.kMeans = function(params){
-//
-// }
+Dataset.prototype.generateCentroids = function(centroidCount){
+  this.generateArbitrary(centroidCount, this.centroids);
+  this.assignCentroidColor(this.centroids);
+}
+
+Dataset.prototype.assignCentroidColor = function(vectors){
+  vectors.forEach(function(v){
+    let c = this.rand.color();
+    v.color = `rgb(${c.r},${c.g},${c.b})`;
+  }, this);
+}
+
+Dataset.prototype.kMeans = function(params){
+  this.generateCentroids(params.centroids);
+}
 
 const displayInit = function(params){
   paper.install(window);
@@ -60,11 +76,12 @@ $(document).ready(function(){
   let data = new Dataset({min: 0, max: 600})
 
   $('#gen').click(function(){
-    data.generateArbitrary(20);
+    data.generateArbitrary(20, data.vectors);
     data.display();
   });
-  // $('#k-means').click(function(){
-  //   data.kMeans({centroids: 5, iterations: 20});
-  // })
+  $('#k-means').click(function(){
+    data.kMeans({centroids: 5, iterations: 20});
+    data.display();
+  })
   paper.view.draw();
 });
