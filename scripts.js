@@ -77,14 +77,10 @@ Dataset.prototype.calculateNearest = function(){
 }
 
 Dataset.prototype.distance = function(vector,i, centroids){
-  let distances = centroids.map(function(c){
-    return {
-            centroid: c,
-            distance: (Math.sqrt(Math.pow((vector.x - c.x), 2) + Math.pow((vector.y - c.y), 2)))
-          }
+  centroids.sort(function(a,b){
+    return (Math.sqrt(Math.pow((vector.x - a.x), 2) + Math.pow((vector.y - a.y), 2))) - (Math.sqrt(Math.pow((vector.x - b.x), 2) + Math.pow((vector.y - b.y), 2)))
   });
-  distances.sort(function(a,b){return a.distance - b.distance})
-  return distances[0].centroid;
+  return centroids[0]
 }
 
 Dataset.prototype.kMeans = function(params){
