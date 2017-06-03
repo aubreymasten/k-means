@@ -1,11 +1,19 @@
 function Random(){}
 
-Random.prototype.Int = function(max, min){
+Random.prototype.int = function(min, max){
   return Math.floor(Math.random() * (max - min) - min);
 }
 
-Random.prototype.Vector = function(max,min){
-  return {x: this.Int(max,min), y: this.Int(max,min)}
+Random.prototype.vector = function(min,max){
+  return {x: this.int(min,max), y: this.int(min,max)}
+}
+
+Random.prototype.color = function(){
+  return {
+    r: this.int(0,255),
+    g: this.int(0,255),
+    b: this.int(0,255)
+  }
 }
 
 function Dataset(params){
@@ -17,14 +25,15 @@ function Dataset(params){
 
 Dataset.prototype.generateArbitrary = function(vectorCount) {
   for(let i = 0; i < vectorCount; i++){
-    this.vectors.push(this.rand.Vector(this.max, this.min));
+    this.vectors.push(this.rand.vector(this.min, this.max));
   }
 }
 
 Dataset.prototype.display = function(){
   this.vectors.forEach(function(v){
-    Shape.Circle(v.x,v.y,1).fillColor = 'white';
-  })
+    let c = this.rand.color();
+    Shape.Circle(v.x,v.y,1).fillColor = `rgb(${c.r}, ${c.g}, ${c.b})`;
+  }, this)
 }
 
 // Dataset.prototype.kMeans = function(params){
