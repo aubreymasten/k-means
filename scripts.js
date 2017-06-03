@@ -1,21 +1,24 @@
+function Random(){}
+
+Random.prototype.Int = function(max, min){
+  return Math.floor(Math.random() * (max - min) - min);
+}
+
+Random.prototype.Vector = function(max,min){
+  return {x: this.Int(max,min), y: this.Int(max,min)}
+}
+
 function Dataset(params){
   this.max = params.max;
   this.min = params.min;
   this.vectors = [];
+  this.rand = new Random();
 }
 
 Dataset.prototype.generateArbitrary = function(vectorCount) {
   for(let i = 0; i < vectorCount; i++){
-    this.vectors.push(this.randVector());
+    this.vectors.push(this.rand.Vector(this.max, this.min));
   }
-}
-
-Dataset.prototype.randVector = function(){
-  return {x: this.randInt(), y: this.randInt()}
-}
-
-Dataset.prototype.randInt = function(){
-  return Math.floor(Math.random() * (this.max - this.min) - this.min);
 }
 
 Dataset.prototype.display = function(){
@@ -24,7 +27,7 @@ Dataset.prototype.display = function(){
   })
 }
 
-// Dataset.prototype.kMeans = function(){
+// Dataset.prototype.kMeans = function(params){
 //
 // }
 
