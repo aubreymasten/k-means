@@ -26,6 +26,8 @@ function Centroid(params) {
   this.x = params.x;
   this.y = params.y;
   this.color = params.color;
+  this.vectors = [];
+  this.element = params.element;
 }
 
 function Dataset(params){
@@ -53,7 +55,9 @@ Dataset.prototype.display = function(){
   });
 
   this.centroids.forEach(function(c){
-    Shape.Rectangle(c.x,c.y,10,10).fillColor = `${c.color}`;
+    c.element.setPosition(c.x,c.y);
+    c.element.setSize(10,10);
+    c.element.setFillColor(`${c.color}`);
   });
 }
 
@@ -63,7 +67,8 @@ Dataset.prototype.generateCentroids = function(centroidCount){
     let centroid = new Centroid({
       x: this.rand.int(this.min, this.max),
       y: this.rand.int(this.min, this.max),
-      color: `rgb(${c.r},${c.g},${c.b})`
+      color: `rgb(${c.r},${c.g},${c.b})`,
+      element: Shape.Rectangle(c.x, c.y, 10,10)
     });
     this.centroids.push(centroid);
   }
@@ -73,7 +78,19 @@ Dataset.prototype.calculateNearest = function(){
   this.vectors.forEach(function(v,i){
     let c = this.distance(v,i, this.centroids);
     v.color = c.color;
+    c.vectors.push(v);
   }, this);
+  this.centroids.forEach(function(c){
+    let x = c.vectors.reduce(function(acc, v){
+      return acc + v.x;
+    },0);
+    let y = c.vectors.reduce(function(acc, v){
+      return acc + v.y;
+    },0);
+    c.x = x/c.vectors.length;
+    c.y = y/c.vectors.length;
+    c.vectors = [];
+  })
 }
 
 Dataset.prototype.distance = function(vector,i, centroids){
