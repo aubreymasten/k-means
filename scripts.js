@@ -1,31 +1,35 @@
+function Dataset(params){
+  this.max = params.max;
+  this.min = params.min;
+  this.vectors = [];
+}
 
-
-const generateArbitraryVectors = function(vectors, dataset) {
-  for(let i = 0; i < vectors; i++){
-    let x = Math.floor(Math.random()*(dataset.scale[1]-dataset.scale[0]) + dataset.scale[0]);
-    let y = Math.floor(Math.random()*(dataset.scale[1]-dataset.scale[0]) + dataset.scale[0]);
-    dataset.vectors.push([x,y]);
+Dataset.prototype.generateArbitrary = function(vectorNum) {
+  for(let i = 0; i < vectorNum; i++){
+    let x = Math.floor(Math.random()*(this.max-this.min) + this.min);
+    let y = Math.floor(Math.random()*(this.max-this.min) + this.min);
+    this.vectors.push({x:x,y:y});
   }
 }
 
-$(document).ready(function(){
-  const dataset = {
-    scale: [0,600],
-    iterations: 20,
-    centroids: 3,
-    vectors: []
-  }
-  paper.install(window);
-  paper.setup(document.getElementById('canvas'));
+Dataset.prototype.display = function(){
+  this.vectors.forEach(function(v){
+    Shape.Circle(v.x,v.y,1).fillColor = 'white';
+  })
+}
 
+const displayInit = function(params){
+  paper.install(window);
+  paper.setup(document.getElementById(`${params.canvas}`))
+}
+
+$(document).ready(function(){
+  displayInit({canvas: 'canvas'})
+  let data = new Dataset({min: 0, max: 600})
 
   $('#gen').click(function(){
-    generateArbitraryVectors(200, dataset);
-    console.log(dataset.vectors);
-    dataset.vectors.forEach(function(vector){
-      let c = Shape.Circle(vector[0], vector[1], 2);
-      c.fillColor = 'black';
-    })
+    data.generateArbitrary(20);
+    data.display();
   });
   paper.view.draw();
 });
