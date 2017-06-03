@@ -16,6 +16,12 @@ Random.prototype.color = function(){
   }
 }
 
+function Vector(params){
+  this.x = params.x;
+  this.y = params.y;
+  this.color = params.color;
+}
+
 function Dataset(params){
   this.max = params.max;
   this.min = params.min;
@@ -25,15 +31,19 @@ function Dataset(params){
 
 Dataset.prototype.generateArbitrary = function(vectorCount) {
   for(let i = 0; i < vectorCount; i++){
-    this.vectors.push(this.rand.vector(this.min, this.max));
+    let vector = new Vector({
+      x: this.rand.int(this.min, this.max),
+      y: this.rand.int(this.min, this.max),
+      color: 'white'
+    });
+    this.vectors.push(vector);
   }
 }
 
 Dataset.prototype.display = function(){
   this.vectors.forEach(function(v){
-    let c = this.rand.color();
-    Shape.Circle(v.x,v.y,1).fillColor = `rgb(${c.r}, ${c.g}, ${c.b})`;
-  }, this)
+    Shape.Circle(v.x,v.y,1).fillColor = `${v.color}`;
+  })
 }
 
 // Dataset.prototype.kMeans = function(params){
