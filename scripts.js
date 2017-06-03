@@ -4,12 +4,18 @@ function Dataset(params){
   this.vectors = [];
 }
 
-Dataset.prototype.generateArbitrary = function(vectorNum) {
-  for(let i = 0; i < vectorNum; i++){
-    let x = Math.floor(Math.random()*(this.max-this.min) + this.min);
-    let y = Math.floor(Math.random()*(this.max-this.min) + this.min);
-    this.vectors.push({x:x,y:y});
+Dataset.prototype.generateArbitrary = function(vectorCount) {
+  for(let i = 0; i < vectorCount; i++){
+    this.vectors.push(this.randVector());
   }
+}
+
+Dataset.prototype.randVector = function(){
+  return {x: this.randInt(), y: this.randInt()}
+}
+
+Dataset.prototype.randInt = function(){
+  return Math.floor(Math.random() * (this.max - this.min) - this.min);
 }
 
 Dataset.prototype.display = function(){
@@ -17,6 +23,10 @@ Dataset.prototype.display = function(){
     Shape.Circle(v.x,v.y,1).fillColor = 'white';
   })
 }
+
+// Dataset.prototype.kMeans = function(){
+//
+// }
 
 const displayInit = function(params){
   paper.install(window);
@@ -31,5 +41,8 @@ $(document).ready(function(){
     data.generateArbitrary(20);
     data.display();
   });
+  // $('#k-means').click(function(){
+  //   data.kMeans({centroids: 5, iterations: 20});
+  // })
   paper.view.draw();
 });
