@@ -48,12 +48,12 @@ Dataset.prototype.generateArbitrary = function(count) {
 }
 
 Dataset.prototype.display = function(){
-  this.vectors.forEach(function(v){
+  this.vectors.forEach(function(v,i){
     Shape.Circle(v.x,v.y,2).fillColor = `${v.color}`;
   });
 
   this.centroids.forEach(function(c){
-    Shape.Rectangle(c.x,c.y,5,5).fillColor = `${c.color}`;
+    Shape.Rectangle(c.x,c.y,10,10).fillColor = `${c.color}`;
   });
 }
 
@@ -69,8 +69,26 @@ Dataset.prototype.generateCentroids = function(centroidCount){
   }
 }
 
+Dataset.prototype.calculateNearest = function(){
+  this.vectors.forEach(function(v,i){
+    let c = this.distance(v,i, this.centroids);
+    v.color = c.color;
+  }, this);
+}
+
+Dataset.prototype.distance = function(vector,i, centroids){
+  let distances = centroids.map(function(c){
+    return {
+            centroid: c,
+            distance: (Math.sqrt(Math.pow((vector.x - c.x), 2) + Math.pow((vector.y - c.y), 2)))
+          }
+  });
+  distances.sort(function(a,b){return a.distance - b.distance})
+  return distances[0].centroid;
+}
+
 Dataset.prototype.kMeans = function(params){
-  this.generateCentroids(params.centroids);
+  this.calculateNearest();
 }
 
 const displayInit = function(params){
@@ -88,6 +106,10 @@ $(document).ready(function(){
   });
   $('#gen-cen').click(function(){
     data.generateCentroids(5);
+    data.display();
+  });
+  $('#k-means').click(function(){
+    data.kMeans();
     data.display();
   });
   paper.view.draw();
