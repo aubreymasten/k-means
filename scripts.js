@@ -24,6 +24,7 @@ function Vector(params){
 
 Vector.prototype.initialize = function(){
   this.element = Shape.Circle(this.x, this.y, 2);
+  this.element.setFillColor('white');
 }
 
 function Centroid(params) {
@@ -81,18 +82,6 @@ Dataset.prototype.generateArbitrary = function(count) {
   }
 }
 
-Dataset.prototype.display = function(){
-  this.vectors.forEach(function(v,i){
-    v.element.setPosition(v.x,v.y);
-    v.element.setFillColor(`${v.color}`);
-  });
-
-  this.centroids.forEach(function(c){
-    c.element.setPosition(c.x,c.y);
-    c.element.setFillColor(`${c.color}`);
-  });
-}
-
 Dataset.prototype.generateCentroids = function(centroidCount){
   for(let i = 0; i < centroidCount; i++){
     let centroid = new Centroid({
@@ -110,12 +99,17 @@ Dataset.prototype.calculateNearest = function(){
   });
   this.vectors.forEach(function(v){
     this.closest(v);
-    v.color = this.centroids[0].color;
+    v.element.setFillColor(this.centroids[0].color);
     this.centroids[0].vectors.push(v);
   }, this);
   this.centroids.forEach(function(c){
     c.mean();
+    c.updatePos();
   });
+}
+
+Centroid.prototype.updatePos = function(){
+  this.element.setPosition(this.x, this.y);
 }
 
 Centroid.prototype.mean = function(){
@@ -147,17 +141,14 @@ $(document).ready(function(){
 
   $('#gen-arb').click(function(){
     data.generateArbitrary(100);
-    data.display();
     $("#datapoints").text(`datapoints: ${data.vectors.length}`)
   });
   $('#gen-cen').click(function(){
     data.generateCentroids(1);
-    data.display();
     $("#centroids").text(` centroids: ${data.centroids.length}`)
   });
   $('#k-means').click(function(){
     data.kMeans();
-    data.display();
   });
   $('#shape').click(function(){
     data.centroids.forEach(function(c){
