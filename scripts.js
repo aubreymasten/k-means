@@ -31,6 +31,7 @@ function Centroid(params) {
   this.y = params.y;
   this.color = params.color;
   this.vectors = [];
+  this.lines = [];
   this.element = params.element;
 }
 
@@ -38,6 +39,27 @@ Centroid.prototype.initialize = function(params){
   this.color = `rgb(${params.c.r},${params.c.g},${params.c.b})`;
   this.element = Shape.Rectangle(this.x, this.y, 10,10);
   this.element.setFillColor(this.color);
+}
+
+Centroid.prototype.shape = function(){
+  this.clearShapes();
+  let x = this.x;
+  let y = this.y;
+  this.vectors.sort(function(a,b){
+    return (Math.sqrt(Math.pow((x - b.x), 2) + Math.pow((y - b.y), 2))) - (Math.sqrt(Math.pow((x - a.x), 2) + Math.pow((y - a.y), 2)));
+  });
+  this.lines = this.vectors.map(function(v){
+    return new Path.Line(new Point(v.x, v.y), new Point(this.x, this.y));
+  }, this);
+  this.lines.forEach(function(l){
+    l.strokeColor = this.color;
+  },this);
+}
+
+Centroid.prototype.clearShapes = function(){
+  this.lines.forEach(function(l){
+    l.remove();
+  });
 }
 
 function Dataset(params){
@@ -83,10 +105,13 @@ Dataset.prototype.generateCentroids = function(centroidCount){
 }
 
 Dataset.prototype.calculateNearest = function(){
-  this.vectors.forEach(function(v,i){
-    let c = this.distance(v,i, this.centroids);
-    v.color = c.color;
-    c.vectors.push(v);
+  this.centroids.forEach(function(c){
+    c.vectors.length = 0;
+  });
+  this.vectors.forEach(function(v){
+    this.closest(v);
+    v.color = this.centroids[0].color;
+    this.centroids[0].vectors.push(v);
   }, this);
   this.centroids.forEach(function(c){
     let x = c.vectors.reduce(function(acc, v){
@@ -97,15 +122,13 @@ Dataset.prototype.calculateNearest = function(){
     },0);
     c.x = x/c.vectors.length;
     c.y = y/c.vectors.length;
-    c.vectors = [];
-  })
+  });
 }
 
-Dataset.prototype.distance = function(vector,i, centroids){
-  centroids.sort(function(a,b){
-    return (Math.sqrt(Math.pow((vector.x - a.x), 2) + Math.pow((vector.y - a.y), 2))) - (Math.sqrt(Math.pow((vector.x - b.x), 2) + Math.pow((vector.y - b.y), 2)))
+Dataset.prototype.closest = function(v){
+  this.centroids.sort(function(a,b){
+    return (Math.sqrt(Math.pow((v.x - a.x), 2) + Math.pow((v.y - a.y), 2))) - (Math.sqrt(Math.pow((v.x - b.x), 2) + Math.pow((v.y - b.y), 2)))
   });
-  return centroids[0]
 }
 
 Dataset.prototype.kMeans = function(params){
@@ -127,7 +150,7 @@ $(document).ready(function(){
     $("#datapoints").text(`datapoints: ${data.vectors.length}`)
   });
   $('#gen-cen').click(function(){
-    data.generateCentroids(10);
+    data.generateCentroids(1);
     data.display();
     $("#centroids").text(` centroids: ${data.centroids.length}`)
   });
@@ -135,5 +158,15 @@ $(document).ready(function(){
     data.kMeans();
     data.display();
   });
+  $('#shape').click(function(){
+    data.centroids.forEach(function(c){
+      c.shape();
+    });
+  });
+  $('#unshape').click(function(){
+    data.centroids.forEach(function(c){
+      c.clearShapes();
+    });
+  })
   paper.view.draw();
 });
