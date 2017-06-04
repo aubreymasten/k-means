@@ -19,7 +19,11 @@ Random.prototype.color = function(){
 function Vector(params){
   this.x = params.x;
   this.y = params.y;
-  this.color = params.color;
+  this.color = 'white';
+}
+
+Vector.prototype.initialize = function(){
+  this.element = Shape.Circle(this.x, this.y, 2);
 }
 
 function Centroid(params) {
@@ -28,6 +32,12 @@ function Centroid(params) {
   this.color = params.color;
   this.vectors = [];
   this.element = params.element;
+}
+
+Centroid.prototype.initialize = function(params){
+  this.color = `rgb(${params.c.r},${params.c.g},${params.c.b})`;
+  this.element = Shape.Rectangle(this.x, this.y, 10,10);
+  this.element.setFillColor(this.color);
 }
 
 function Dataset(params){
@@ -42,34 +52,32 @@ Dataset.prototype.generateArbitrary = function(count) {
   for(let i = 0; i < count; i++){
     let vector = new Vector({
       x: this.rand.int(this.min, this.max),
-      y: this.rand.int(this.min, this.max),
-      color: 'white'
+      y: this.rand.int(this.min, this.max)
     });
+    vector.initialize();
     this.vectors.push(vector);
   }
 }
 
 Dataset.prototype.display = function(){
   this.vectors.forEach(function(v,i){
-    Shape.Circle(v.x,v.y,2).fillColor = `${v.color}`;
+    v.element.setPosition(v.x,v.y);
+    v.element.setFillColor(`${v.color}`);
   });
 
   this.centroids.forEach(function(c){
     c.element.setPosition(c.x,c.y);
-    c.element.setSize(10,10);
     c.element.setFillColor(`${c.color}`);
   });
 }
 
 Dataset.prototype.generateCentroids = function(centroidCount){
   for(let i = 0; i < centroidCount; i++){
-    let c = this.rand.color();
     let centroid = new Centroid({
       x: this.rand.int(this.min, this.max),
       y: this.rand.int(this.min, this.max),
-      color: `rgb(${c.r},${c.g},${c.b})`,
-      element: Shape.Rectangle(c.x, c.y, 10,10)
     });
+    centroid.initialize({c: this.rand.color()})
     this.centroids.push(centroid);
   }
 }
@@ -111,15 +119,17 @@ const displayInit = function(params){
 
 $(document).ready(function(){
   displayInit({canvas: 'canvas'})
-  let data = new Dataset({min: 0, max: 600})
+  let data = new Dataset({min: 0, max: 1000})
 
   $('#gen-arb').click(function(){
-    data.generateArbitrary(20);
+    data.generateArbitrary(100);
     data.display();
+    $("#datapoints").text(`datapoints: ${data.vectors.length}`)
   });
   $('#gen-cen').click(function(){
-    data.generateCentroids(5);
+    data.generateCentroids(10);
     data.display();
+    $("#centroids").text(` centroids: ${data.centroids.length}`)
   });
   $('#k-means').click(function(){
     data.kMeans();
