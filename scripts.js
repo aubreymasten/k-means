@@ -114,15 +114,16 @@ Dataset.prototype.calculateNearest = function(){
     this.centroids[0].vectors.push(v);
   }, this);
   this.centroids.forEach(function(c){
-    let x = c.vectors.reduce(function(acc, v){
-      return acc + v.x;
-    },0);
-    let y = c.vectors.reduce(function(acc, v){
-      return acc + v.y;
-    },0);
-    c.x = x/c.vectors.length;
-    c.y = y/c.vectors.length;
+    c.mean();
   });
+}
+
+Centroid.prototype.mean = function(){
+  let x = this.vectors.reduce(function(acc, v){
+    return [acc[0]+v.x, acc[1]+v.y];
+  },[0,0]);
+  this.x = x[0]/this.vectors.length;
+  this.y = x[1]/this.vectors.length;
 }
 
 Dataset.prototype.closest = function(v){
