@@ -42,6 +42,26 @@ Centroid.prototype.initialize = function(params){
   this.element.setFillColor(this.color);
 }
 
+Centroid.prototype.triangulate = function(){
+  this.sortX();
+  let length = this.vectors.length-1;
+  for(let i = 0; i < length; i++){
+    let from = new Point(this.vectors[i].x, this.vectors[i].y);
+    let to = new Point(this.vectors[i+1].x, this.vectors[i+1].y);
+    let line = new Path.Line(from, to);
+    line.setStrokeColor(this.color);
+    this.lines.push(line);
+  }
+}
+
+Centroid.prototype.sortX = function(){
+  this.vectors.sort(function(a,b){
+    return a.x-b.x;
+  });
+}
+
+
+
 Centroid.prototype.shape = function(){
   this.clearShapes();
   let x = this.x;
@@ -144,7 +164,7 @@ $(document).ready(function(){
     $("#datapoints").text(`datapoints: ${data.vectors.length}`)
   });
   $('#gen-cen').click(function(){
-    data.generateCentroids(1);
+    data.generateCentroids(10);
     $("#centroids").text(` centroids: ${data.centroids.length}`)
   });
   $('#k-means').click(function(){
@@ -159,6 +179,11 @@ $(document).ready(function(){
     data.centroids.forEach(function(c){
       c.clearShapes();
     });
-  })
+  });
+  $('#triangulate').click(function(){
+    data.centroids.forEach(function(c){
+      c.triangulate();
+    });
+  });
   paper.view.draw();
 });
