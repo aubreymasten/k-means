@@ -43,7 +43,7 @@ Centroid.prototype.initialize = function(params){
 }
 
 Centroid.prototype.triangulate = function(){
-  this.sortX();
+  this.sortY();
   let length = this.vectors.length-1;
   for(let i = 0; i < length; i++){
     let from = new Point(this.vectors[i].x, this.vectors[i].y);
@@ -60,7 +60,29 @@ Centroid.prototype.sortX = function(){
   });
 }
 
+Centroid.prototype.sortY = function(){
+  this.vectors.sort(function(a,b){
+    return a.y-b.y;
+  });
+}
 
+Centroid.prototype.sortSlope = function(p){
+  const P = this.vectors[0];
+  this.vectors.sort(function(a,b){
+    return ((a.x-P.x)/(a.y-P.y)) - ((b.x-P.x)/(b.y-P.y));
+  });
+}
+
+// TODO: handle y-min duplicates. select lowest x coord
+Centroid.prototype.graham = function(){
+  this.sortY();
+  this.sortSlope();
+  this.vectors.forEach(function(v,i){
+    let t = new PointText(new Point(v.x+5, v.y-5));
+    t.setFillColor('white');
+    t.content = `${i}`;
+  });
+}
 
 Centroid.prototype.shape = function(){
   this.clearShapes();
@@ -116,6 +138,7 @@ Dataset.prototype.generateCentroids = function(centroidCount){
 Dataset.prototype.calculateNearest = function(){
   this.centroids.forEach(function(c){
     c.vectors.length = 0;
+    c.clearShapes();
   });
   this.vectors.forEach(function(v){
     this.closest(v);
@@ -125,6 +148,8 @@ Dataset.prototype.calculateNearest = function(){
   this.centroids.forEach(function(c){
     c.mean();
     c.updatePos();
+    // c.shape();
+    // c.triangulate();
   });
 }
 
@@ -160,11 +185,11 @@ $(document).ready(function(){
   let data = new Dataset({min: 0, max: 1000})
 
   $('#gen-arb').click(function(){
-    data.generateArbitrary(100);
+    data.generateArbitrary(20);
     $("#datapoints").text(`datapoints: ${data.vectors.length}`)
   });
   $('#gen-cen').click(function(){
-    data.generateCentroids(10);
+    data.generateCentroids(1);
     $("#centroids").text(` centroids: ${data.centroids.length}`)
   });
   $('#k-means').click(function(){
@@ -181,9 +206,11 @@ $(document).ready(function(){
     });
   });
   $('#triangulate').click(function(){
-    data.centroids.forEach(function(c){
-      c.triangulate();
-    });
+    // data.centroids[0].sortY();
+    data.centroids[0].graham();
+    // data.centroids.forEach(function(c){
+    //   c.triangulate();
+    // });
   });
   paper.view.draw();
 });
