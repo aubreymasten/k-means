@@ -62,26 +62,78 @@ Centroid.prototype.sortX = function(){
 
 Centroid.prototype.sortY = function(){
   this.vectors.sort(function(a,b){
-    return a.y-b.y;
+    return b.y-a.y;
   });
+  if(this.vectors[0].y == this.vectors[1].y){
+    let y = this.vectors[0].y;
+    this.vectors = this.vectors.slice(0, (this.vectors.filter(function(v){return v.y === y;}).length)).sort(function(a,b){a.b-b.x}).concat(this.vectors.slice(this.vectors.filter(function(v){return v.y === y;}).length), this.vectors.length);
+  }
 }
 
-Centroid.prototype.sortSlope = function(p){
+Centroid.prototype.sortSlope = function(){
   const P = this.vectors[0];
   this.vectors.sort(function(a,b){
+    // console.log(a);
+    // console.log(b);
+    // console.log(`a(${a.x},${a.y})b(${b.x},${b.y})P(${P.x},${P.y})`);
+    // console.log(((a.x-P.x)/(a.y-P.y)) - ((b.x-P.x)/(b.y-P.y)));
     return ((a.x-P.x)/(a.y-P.y)) - ((b.x-P.x)/(b.y-P.y));
   });
 }
 
 // TODO: handle y-min duplicates. select lowest x coord
+// TODO: handle slope duplicates. select furthest x from P
+// TODO: ccw handling is reversed
 Centroid.prototype.graham = function(){
+  this.posText = new PointText(this.element.position);
+  this.posText.setFillColor('white');
+  this.posText.setContent(`(${this.x},${this.y})`);
+  if (this.vectors[0].y === this.vectors[1].y) {
+    return;
+  }
+
   this.sortY();
   this.sortSlope();
-  this.vectors.forEach(function(v,i){
-    let t = new PointText(new Point(v.x+5, v.y-5));
-    t.setFillColor('white');
-    t.content = `${i}`;
+
+  let a = this.vectors;
+  let n = a.length;
+  let hull = [];
+  hull.push(a[0]);
+  hull.push(a[1]);
+
+  for(let i = 2; i < n; i++){
+    let top = hull.pop();
+    while(this.ccw(hull.slice(-1)[0], top, a[i]) >= 0) {
+      top = hull.pop();
+    }
+    hull.push(top);
+    hull.push(a[i]);
+  }
+
+  let segments = hull.map(function(point){
+    return [point.x, point.y];
+  })
+  // console.log(segments);
+
+  this.path = new Path({
+    segments: segments
   });
+  this.path.setStrokeColor(this.color);
+  this.path.closed = true;
+  // this.path.setFillColor(this.color);
+  //
+  // hull.unshift(hull.slice(-1)[0]);
+  // for(let i = 1; i < hull.length; i++){
+  //   let line = new Path.Line(hull[i-1].element.position, hull[i].element.position);
+  //   this.lines.push(line);
+  //   line.setStrokeColor(this.color);
+  // }
+  //
+
+}
+
+Centroid.prototype.ccw = function(p1,p2,p3){
+  return (p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x);
 }
 
 Centroid.prototype.shape = function(){
@@ -103,6 +155,8 @@ Centroid.prototype.clearShapes = function(){
   this.lines.forEach(function(l){
     l.remove();
   });
+  if(this.path) this.path.remove();
+  if(this.posText) this.posText.remove();
 }
 
 function Dataset(params){
@@ -148,6 +202,7 @@ Dataset.prototype.calculateNearest = function(){
   this.centroids.forEach(function(c){
     c.mean();
     c.updatePos();
+    c.graham();
     // c.shape();
     // c.triangulate();
   });
@@ -161,8 +216,8 @@ Centroid.prototype.mean = function(){
   let x = this.vectors.reduce(function(acc, v){
     return [acc[0]+v.x, acc[1]+v.y];
   },[0,0]);
-  this.x = x[0]/this.vectors.length;
-  this.y = x[1]/this.vectors.length;
+  this.x = Math.floor(x[0]/this.vectors.length);
+  this.y = Math.floor(x[1]/this.vectors.length);
 }
 
 Dataset.prototype.closest = function(v){
