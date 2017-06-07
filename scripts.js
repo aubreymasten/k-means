@@ -37,7 +37,8 @@ function Centroid(params) {
 }
 
 Centroid.prototype.initialize = function(params){
-  this.color = `rgb(${params.c.r},${params.c.g},${params.c.b})`;
+  this.color = `rgba(${params.c.r},${params.c.g},${params.c.b},1)`;
+  this.colorParams = params.c;
   this.element = Shape.Rectangle(this.x, this.y, 10,10);
   this.element.setFillColor(this.color);
 }
@@ -68,10 +69,10 @@ Centroid.prototype.sortX = function(){
 Centroid.prototype.sortY = function(){
   this.vectors.sort(function(a,b){
     if(a.y === b.y){
-      this.posText = new Path.Line(a.element.position, b.element.position);
-      this.posText.setStrokeColor('red');
+      // this.posText = new Path.Line(a.element.position, b.element.position);
+      // this.posText.setStrokeColor('red');
       // this.posText.setContent(`(${this.x},${this.y})`);
-      console.log("duplicate");
+      // console.log("duplicate");
     }
     if(a.y < b.y) return -1;
     if(a.y > b.y) return 1;
@@ -85,11 +86,18 @@ Centroid.prototype.sortY = function(){
 Centroid.prototype.sortSlope = function(){
   const P = this.vectors[0];
   this.vectors.sort(function(a,b){
-    // console.log(a);
-    // console.log(b);
-    // console.log(`a(${a.x},${a.y})b(${b.x},${b.y})P(${P.x},${P.y})`);
-    // console.log(((a.x-P.x)/(a.y-P.y)) - ((b.x-P.x)/(b.y-P.y)));
-    return ((a.x-P.x)/(a.y-P.y)) - ((b.x-P.x)/(b.y-P.y));
+    let sa = ((a.x-P.x)/(a.y-P.y));
+    let sb = ((b.x-P.x)/(b.y-P.y));
+    if(sa === sb){
+      // console.log("same angle");
+      let ad = (Math.sqrt(Math.pow((P.x - a.x), 2) + Math.pow((P.y - a.y), 2)));
+      let bd = (Math.sqrt(Math.pow((P.x - b.x), 2) + Math.pow((P.y - b.y), 2)));
+      if(ad > bd) return -1;
+      if(ad < bd) return 1;
+      else return 0;
+    }
+    if(sa > sb) return -1;
+    if(sa < sb) return 1;
   });
 }
 
@@ -98,13 +106,13 @@ Centroid.prototype.sortSlope = function(){
 // TODO: ccw handling is reversed
 Centroid.prototype.graham = function(){
   this.sortY();
-  this.vectors.forEach(function(v,i){
-    this.posText = new PointText(v.element.position);
-    this.posText.setFillColor('white');
-    this.posText.setContent(`${i}(${v.x},${v.y})`);
-  });
-  this.sortSlope();
 
+  this.sortSlope();
+  // this.vectors.forEach(function(v,i){
+  //   this.posText = new PointText(v.element.position);
+  //   this.posText.setFillColor('white');
+  //   this.posText.setContent(`${i}(${v.x},${v.y})`);
+  // });
 
   let a = this.vectors;
   let n = a.length;
@@ -130,16 +138,15 @@ Centroid.prototype.graham = function(){
     segments: segments
   });
   this.path.setStrokeColor(this.color);
+  this.path.setFillColor(`rgba(${this.colorParams.r},${this.colorParams.g},${this.colorParams.b},.3)`)
   this.path.closed = true;
 }
 
 Centroid.prototype.ccw = function(p1,p2,p3){
-  console.log((p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x));
-  let a = (p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x);
-  if(a < 0) return -1;
-  else if(a > 0) return 1;
+  let area = (p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x);
+  if(area < 0) return -1;
+  else if(area > 0) return 1;
   else return 0;
-  // return (p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x);
 }
 
 Centroid.prototype.shape = function(){
@@ -208,7 +215,7 @@ Dataset.prototype.calculateNearest = function(){
   this.centroids.forEach(function(c){
     c.mean();
     c.updatePos();
-    c.graham();
+    // c.graham();
     // c.shape();
     // c.triangulate();
   });
@@ -243,10 +250,10 @@ const displayInit = function(params){
 
 $(document).ready(function(){
   displayInit({canvas: 'canvas'})
-  let data = new Dataset({min: -50, max: 500})
+  let data = new Dataset({min: 0, max: 1000})
 
   $('#gen-arb').click(function(){
-    data.generateArbitrary(100);
+    data.generateArbitrary(500);
     $("#datapoints").text(`datapoints: ${data.vectors.length}`)
   });
   $('#gen-cen').click(function(){
@@ -268,10 +275,13 @@ $(document).ready(function(){
   });
   $('#triangulate').click(function(){
     // data.centroids[0].sortY();
-    data.centroids[0].graham();
+    // data.centroids[0].graham();
     // data.centroids.forEach(function(c){
     //   c.triangulate();
     // });
+    data.centroids.forEach(function(c){
+      c.graham();
+    });
   });
   paper.view.draw();
 });
