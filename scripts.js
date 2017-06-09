@@ -268,9 +268,7 @@ $(document).ready(function(){
     data.clear();
     data.pointVis();
   });
-  // $('#unshape').click(function(){
-  //   data.clear();
-  // });
+
   $('#hull').click(function(){
     data.clear();
     data.graham();
