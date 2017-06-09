@@ -1,4 +1,8 @@
 // TODO: add color object
+// TODO: separate classes into files
+// TODO: module-ize random methods
+// TODO: reusable sort & coordinate visualization
+// TODO: add timeout repetition
 
 function Random(){}
 
@@ -32,6 +36,7 @@ function Centroid(params) {
   this.element = params.element;
   this.vectors = [];
   this.lines = [];
+  this.hull = [];
 }
 
 Centroid.prototype.initialize = function(params){
@@ -59,6 +64,7 @@ Centroid.prototype.sortY = function(){
   });
 }
 
+// NOTE: redundant logic
 Centroid.prototype.sortSlope = function(){
   const P = this.vectors[0];
   this.vectors.sort(function(a,b){
@@ -92,31 +98,40 @@ Centroid.prototype.vizCoords = function(){
   })
 }
 
-// TODO: ccw handling is reversed
+Vector.prototype.equals = function(v){
+  return this.x === v.x && this.y === v.y;
+}
+
+// NOTE: unnecessary loops
 Centroid.prototype.graham = function(){
   this.sortY();
   this.sortSlope();
   // this.vizSort();
+  this.hull.length = 0;
 
-  let a = this.vectors;
-  let n = a.length;
-  let hull = [];
-  hull.push(a[0]);
-  hull.push(a[1]);
+  let n = this.vectors.length;
+  this.hull.push(this.vectors[0]);
 
-  for(let i = 2; i < n; i++){
-    let top = hull.pop();
-    while(this.ccw(hull.slice(-1)[0], top, a[i]) <= 0) {
-      top = hull.pop();
-    }
-    hull.push(top);
-    hull.push(a[i]);
+  let p2 = 2;
+  for(; p2 < n; p2++){
+    if(this.ccw(this.vectors[0],this.vectors[1], this.vectors[p2]) != 0) break;
+  }
+  this.hull.push(this.vectors[p2-1]);
+
+  for(let i = p2; i < n; i++){
+      let top = this.hull.pop();
+      while(this.ccw(this.hull.slice(-1)[0], top, this.vectors[i]) <= 0) {
+        top = this.hull.pop();
+      }
+
+    this.hull.push(top);
+    this.hull.push(this.vectors[i]);
   }
 
-  let segments = hull.map(function(point){
+  let segments = this.hull.map(function(point){
     return [point.x, point.y];
   })
-
+// TODO: separate visualization and hull generation
   this.path = new Path({
     segments: segments
   });
@@ -125,7 +140,9 @@ Centroid.prototype.graham = function(){
   this.path.closed = true;
 }
 
+// TODO: draw lines between broken points
 Centroid.prototype.ccw = function(p1,p2,p3){
+  if(!p1||!p2||!p3)debugger;
   let area = (p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x);
   if(area < 0) return -1;
   else if(area > 0) return 1;
@@ -133,6 +150,8 @@ Centroid.prototype.ccw = function(p1,p2,p3){
 }
 
 // TODO: refactor w/ fat arrows
+// NOTE: euclidean distance calculation may be used more than once
+// TODO: separate coloration
 Centroid.prototype.shape = function(){
   let x = this.x;
   let y = this.y;
@@ -147,6 +166,7 @@ Centroid.prototype.shape = function(){
   },this);
 }
 
+// QUESTION: paper js handling of removal efficient?
 Centroid.prototype.clearShapes = function(){
   this.lines.forEach(function(l){
     l.remove();
@@ -203,6 +223,8 @@ Dataset.prototype.generateCentroids = function(centroidCount){
   }
 }
 
+// TODO: visualization for sort methods
+// TODO: remove redundant vector clearing
 Dataset.prototype.calculateNearest = function(){
   this.centroids.forEach(function(c){
     c.vectors.length = 0;
@@ -218,7 +240,6 @@ Dataset.prototype.calculateNearest = function(){
     c.updatePos();
     c.graham();
     // c.shape();
-    // c.triangulate();
   });
 }
 
