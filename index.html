@@ -13,13 +13,15 @@
   </head>
   <body>
     <canvas id="canvas"></canvas>
-    <button id="gen-arb" type="button">dataset</button>
-    <button id="gen-cen" type="button">centroids</button>
-    <button id="k-means" type="button">k-means</button>
-    <button id="shape" type="button">shape</button>
-    <button id="unshape" type="button">unshape</button>
-    <button id="triangulate" type="button">aubrey doesn't understand triangulation yet</button>
-    <button id="hull" type="button">aubrey also doesn't understand convex hulls</button>
-    <span id="datapoints"></span><span id="centroids"></span>
+    <div id="controls">
+      <button id="gen-arb" type="button">dataset</button>
+      <button id="gen-cen" type="button">centroids</button>
+      <button id="k-means" type="button">k-means</button>
+      <button id="shape" type="button">shape</button>
+      <button id="unshape" type="button">unshape</button>
+      <button id="hull" type="button">convex hull</button>
+      <button id="hull" type="button">aubrey doesn't understand triangulations yet</button>
+      <span id="datapoints">datapoints: 0</span><span id="centroids"> centroids: 0</span>
+    </div>
   </body>
 </html>

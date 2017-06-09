@@ -1,11 +1,9 @@
+// TODO: add color object
+
 function Random(){}
 
 Random.prototype.int = function(min, max){
   return Math.floor(Math.random() * (max - min) - min);
-}
-
-Random.prototype.vector = function(min,max){
-  return {x: this.int(min,max), y: this.int(min,max)}
 }
 
 Random.prototype.color = function(){
@@ -31,55 +29,33 @@ function Centroid(params) {
   this.x = params.x;
   this.y = params.y;
   this.color = params.color;
+  this.element = params.element;
   this.vectors = [];
   this.lines = [];
-  this.element = params.element;
 }
 
 Centroid.prototype.initialize = function(params){
-  this.color = `rgba(${params.c.r},${params.c.g},${params.c.b},1)`;
-  this.colorParams = params.c;
+  this.color = params.c;
   this.element = Shape.Rectangle(this.x, this.y, 10,10);
-  this.element.setFillColor(this.color);
+  this.element.setFillColor(this.getRGB());
 }
 
-Centroid.prototype.triangulate = function(){
-  this.sortY();
-  let length = this.vectors.length-1;
-  for(let i = 0; i < length; i++){
-    let from = new Point(this.vectors[i].x, this.vectors[i].y);
-    let to = new Point(this.vectors[i+1].x, this.vectors[i+1].y);
-    let line = new Path.Line(from, to);
-    line.setStrokeColor(this.color);
-    this.lines.push(line);
-  }
+Centroid.prototype.getRGB = function(){
+  return `rgb(${this.color.r},${this.color.g},${this.color.b})`;
 }
 
-Centroid.prototype.sortX = function(){
-  this.vectors.sort(function(a,b){
-    // if(a.y < b.y) return -1;
-    // if(a.y > b.y) return 1;
-    // if(a.x < b.x) return -1;
-    // if(a.x > b.x) return 1;
-    // return 0;
-    return a.x-b.x;
-  });
+Centroid.prototype.getRGBA = function(a = 1){
+  return `rgba(${this.color.r},${this.color.g},${this.color.b},${a})`;
 }
+
 
 Centroid.prototype.sortY = function(){
   this.vectors.sort(function(a,b){
-    if(a.y === b.y){
-      // this.posText = new Path.Line(a.element.position, b.element.position);
-      // this.posText.setStrokeColor('red');
-      // this.posText.setContent(`(${this.x},${this.y})`);
-      // console.log("duplicate");
-    }
     if(a.y < b.y) return -1;
     if(a.y > b.y) return 1;
     if(a.x > b.x) return -1;
     if(a.x < b.x) return 1;
     return 0;
-    // return b.y-a.y;
   });
 }
 
@@ -89,7 +65,6 @@ Centroid.prototype.sortSlope = function(){
     let sa = ((a.x-P.x)/(a.y-P.y));
     let sb = ((b.x-P.x)/(b.y-P.y));
     if(sa === sb){
-      // console.log("same angle");
       let ad = (Math.sqrt(Math.pow((P.x - a.x), 2) + Math.pow((P.y - a.y), 2)));
       let bd = (Math.sqrt(Math.pow((P.x - b.x), 2) + Math.pow((P.y - b.y), 2)));
       if(ad > bd) return -1;
@@ -101,18 +76,27 @@ Centroid.prototype.sortSlope = function(){
   });
 }
 
-// TODO: handle y-min duplicates. select lowest x coord
-// TODO: handle slope duplicates. select furthest x from P
+Centroid.prototype.vizSort = function(){
+  this.vectors.forEach(function(v,i){
+      this.text = new PointText(v.element.position);
+      this.text.setFillColor('white');
+      this.text.setContent(`${i}`);
+  })
+}
+
+Centroid.prototype.vizCoords = function(){
+  this.vectors.forEach(function(v,i){
+      this.text = new PointText(v.element.position);
+      this.text.setFillColor('white');
+      this.text.setContent(`${i}(${v.x},${v.y})`);
+  })
+}
+
 // TODO: ccw handling is reversed
 Centroid.prototype.graham = function(){
   this.sortY();
-
   this.sortSlope();
-  // this.vectors.forEach(function(v,i){
-  //   this.posText = new PointText(v.element.position);
-  //   this.posText.setFillColor('white');
-  //   this.posText.setContent(`${i}(${v.x},${v.y})`);
-  // });
+  // this.vizSort();
 
   let a = this.vectors;
   let n = a.length;
@@ -132,13 +116,12 @@ Centroid.prototype.graham = function(){
   let segments = hull.map(function(point){
     return [point.x, point.y];
   })
-  // console.log(segments);
 
   this.path = new Path({
     segments: segments
   });
-  this.path.setStrokeColor(this.color);
-  this.path.setFillColor(`rgba(${this.colorParams.r},${this.colorParams.g},${this.colorParams.b},.3)`)
+  this.path.setStrokeColor(this.getRGB());
+  this.path.setFillColor(this.getRGBA(.3));
   this.path.closed = true;
 }
 
@@ -149,18 +132,18 @@ Centroid.prototype.ccw = function(p1,p2,p3){
   else return 0;
 }
 
+// TODO: refactor w/ fat arrows
 Centroid.prototype.shape = function(){
-  this.clearShapes();
   let x = this.x;
   let y = this.y;
   this.vectors.sort(function(a,b){
     return (Math.sqrt(Math.pow((x - b.x), 2) + Math.pow((y - b.y), 2))) - (Math.sqrt(Math.pow((x - a.x), 2) + Math.pow((y - a.y), 2)));
   });
-  this.lines = this.vectors.map(function(v){
+  this.lines = this.lines.concat(this.vectors.map(function(v){
     return new Path.Line(new Point(v.x, v.y), new Point(this.x, this.y));
-  }, this);
+  }, this));
   this.lines.forEach(function(l){
-    l.strokeColor = this.color;
+    l.strokeColor = this.getRGB();
   },this);
 }
 
@@ -169,7 +152,7 @@ Centroid.prototype.clearShapes = function(){
     l.remove();
   });
   if(this.path) this.path.remove();
-  if(this.posText) this.posText.remove();
+  if(this.text) this.text.remove();
 }
 
 function Dataset(params){
@@ -209,13 +192,13 @@ Dataset.prototype.calculateNearest = function(){
   });
   this.vectors.forEach(function(v){
     this.closest(v);
-    v.element.setFillColor(this.centroids[0].color);
+    v.element.setFillColor(this.centroids[0].getRGB());
     this.centroids[0].vectors.push(v);
   }, this);
   this.centroids.forEach(function(c){
     c.mean();
     c.updatePos();
-    // c.graham();
+    c.graham();
     // c.shape();
     // c.triangulate();
   });
@@ -265,6 +248,7 @@ $(document).ready(function(){
   });
   $('#shape').click(function(){
     data.centroids.forEach(function(c){
+      c.clearShapes();
       c.shape();
     });
   });
@@ -273,13 +257,9 @@ $(document).ready(function(){
       c.clearShapes();
     });
   });
-  $('#triangulate').click(function(){
-    // data.centroids[0].sortY();
-    // data.centroids[0].graham();
-    // data.centroids.forEach(function(c){
-    //   c.triangulate();
-    // });
+  $('#hull').click(function(){
     data.centroids.forEach(function(c){
+      c.clearShapes();
       c.graham();
     });
   });
