@@ -174,6 +174,24 @@ Dataset.prototype.generateArbitrary = function(count) {
   }
 }
 
+Dataset.prototype.pointVis = function(){
+  this.centroids.forEach(function(c){
+    c.shape();
+  })
+}
+
+Dataset.prototype.clear = function(){
+  this.centroids.forEach(function(c){
+    c.clearShapes();
+  });
+}
+
+Dataset.prototype.graham = function(){
+  this.centroids.forEach(function(c){
+    c.graham();
+  })
+}
+
 Dataset.prototype.generateCentroids = function(centroidCount){
   for(let i = 0; i < centroidCount; i++){
     let centroid = new Centroid({
@@ -247,21 +265,15 @@ $(document).ready(function(){
     data.kMeans();
   });
   $('#shape').click(function(){
-    data.centroids.forEach(function(c){
-      c.clearShapes();
-      c.shape();
-    });
+    data.clear();
+    data.pointVis();
   });
-  $('#unshape').click(function(){
-    data.centroids.forEach(function(c){
-      c.clearShapes();
-    });
-  });
+  // $('#unshape').click(function(){
+  //   data.clear();
+  // });
   $('#hull').click(function(){
-    data.centroids.forEach(function(c){
-      c.clearShapes();
-      c.graham();
-    });
+    data.clear();
+    data.graham();
   });
   paper.view.draw();
 });
