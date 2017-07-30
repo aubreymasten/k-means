@@ -16,18 +16,21 @@
       <p>
         visualizations: <a href="kmeans.html">k-means</a> / <a href="hulls.html">convex hull</a> / <a href="pi.html">pi</a>  </p>
     </div>
-    <div class="controls">
-      
+    <div class="container">
+
     </div>
     <canvas id="canvas" resize></canvas>
-    <button id="gen-arb" type="button">dataset</button>
-    <button id="gen-cen" type="button">centroids</button>
-    <button id="k-means" type="button">k-means</button>
-    <button id="shape" type="button">shape</button>
-    <button id="unshape" type="button">unshape</button>
-    <button id="hull" type="button">aubrey also doesn't understand convex hulls</button>
-    <button id="pi" type="button">pi</button>
-    <button id="pi-gradient" type="button" name="button">pi++</button>
-    <span id="datapoints"></span><span id="centroids"></span>
+
+    <div class="controls">
+      <div class="half">
+        <button id="gen-arb" type="button">dataset</button>
+        <button id="gen-cen" type="button">centroids</button>
+        <button id="k-means" type="button">generate hulls</button>
+      </div>
+      <div class="half right">
+        <span id="datapoints">datapoints: 0</span>
+        <span id="centroids">centroids: 0</span>
+      </div>
+    </div>
   </body>
 </html>

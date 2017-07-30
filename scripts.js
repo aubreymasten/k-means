@@ -176,8 +176,10 @@ Centroid.prototype.clearShapes = function(){
 }
 
 function Dataset(params){
-  this.max = params.max;
   this.min = params.min;
+  this.xMax = params.xMax;
+  this.yMax = params.yMax;
+
   this.vectors = [];
   this.centroids = [];
   this.rand = new Random();
@@ -186,8 +188,8 @@ function Dataset(params){
 Dataset.prototype.generateArbitrary = function(count) {
   for(let i = 0; i < count; i++){
     let vector = new Vector({
-      x: this.rand.int(this.min, this.max),
-      y: this.rand.int(this.min, this.max)
+      x: this.rand.int(this.min, this.xMax),
+      y: this.rand.int(this.min, this.yMax)
     });
     vector.initialize();
     this.vectors.push(vector);
@@ -215,8 +217,8 @@ Dataset.prototype.graham = function(){
 Dataset.prototype.generateCentroids = function(centroidCount){
   for(let i = 0; i < centroidCount; i++){
     let centroid = new Centroid({
-      x: this.rand.int(this.min, this.max),
-      y: this.rand.int(this.min, this.max),
+      x: this.rand.int(this.min, this.xMax),
+      y: this.rand.int(this.min, this.yMax),
     });
     centroid.initialize({c: this.rand.color()})
     this.centroids.push(centroid);
@@ -270,9 +272,16 @@ const displayInit = function(params){
   paper.setup(document.getElementById(`${params.canvas}`))
 }
 
+
+
 $(document).ready(function(){
+
   displayInit({canvas: 'canvas'})
-  let data = new Dataset({min: 0, max: 1000})
+  let data = new Dataset({
+    min: 0,
+    xMax: paper.view.bounds.width,
+    yMax: paper.view.bounds.height
+  })
 
   $('#gen-arb').click(function(){
     data.generateArbitrary(500);
