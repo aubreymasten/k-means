@@ -1,14 +1,15 @@
 body {
   background-color: white;
-  /*color: white;*/
   text-align: center;
 }
+
 #controls {
   position: absolute;
   bottom: 0;
   height: auto;
   width: 100%;
 }
+
 #canvas {
   width: 50vw;
   min-width: 650px;
@@ -70,8 +71,4 @@ button {
 
 .right {
   float: right;
-}
-
-input {
-  width: 100%;
 }

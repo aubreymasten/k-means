@@ -1,33 +1,27 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script
-  src="https://code.jquery.com/jquery-3.2.1.min.js"
-  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-  crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.11.3/paper-full.min.js">
-
-    </script>
-    <script type="text/javascript" src="scripts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.11.3/paper-full.min.js"></script>
+    <script src="scripts.js" type="text/javascript"></script>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <div class="nav">
       <p>
-        visualizations: <a href="kmeans.html">k-means</a> / <a href="hulls.html">convex hull</a> / <a href="pi.html">pi</a>  </p>
-    </div>
-    <div class="controls">
-      
+        visualizations: <a href="https://en.wikipedia.org/wiki/K-means_clustering">k-means</a> / <a href="https://en.wikipedia.org/wiki/Convex_hull#Convex_hull_of_a_finite_point_set">convex hull</a></p>
     </div>
     <canvas id="canvas" resize></canvas>
-    <button id="gen-arb" type="button">dataset</button>
-    <button id="gen-cen" type="button">centroids</button>
-    <button id="k-means" type="button">k-means</button>
-    <button id="shape" type="button">shape</button>
-    <button id="unshape" type="button">unshape</button>
-    <button id="hull" type="button">aubrey also doesn't understand convex hulls</button>
-    <button id="pi" type="button">pi</button>
-    <button id="pi-gradient" type="button" name="button">pi++</button>
-    <span id="datapoints"></span><span id="centroids"></span>
+    <div class="controls">
+      <div class="half">
+        <button id="gen-arb" type="button">dataset</button>
+        <button id="gen-cen" type="button">centroids</button>
+        <button id="k-means" type="button">generate</button>
+      </div>
+      <div class="half right">
+        <span id="datapoints">datapoints: 1000</span>
+        <span id="centroids">centroids: 1</span>
+      </div>
+    </div>
   </body>
 </html>
